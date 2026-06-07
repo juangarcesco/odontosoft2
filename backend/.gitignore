@@ -18,5 +18,7 @@ dist/
 build/
 coverage/
 
-# Repomix
+# Repomix outputs
 repomix-output.txt
+repomix-output.md
+repomix-output.xml
