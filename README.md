@@ -2,7 +2,7 @@
 
 Sistema de gestión para clínica dental. Permite administrar pacientes, citas, tratamientos y pagos desde una interfaz web moderna.
 
-> Proyecto en desarrollo activo — actualmente en Fase 1 (Backend & Autenticación)
+> **Estado actual:** Módulo 1 completado — Login, autenticación JWT, layout y dashboard funcionando.
 
 ---
 
@@ -10,15 +10,17 @@ Sistema de gestión para clínica dental. Permite administrar pacientes, citas, 
 
 **Backend**
 - Node.js v24 + Express
-- PostgreSQL + Prisma ORM 5.22
+- PostgreSQL 16 + Prisma ORM 5.22
 - JWT (jsonwebtoken) + bcryptjs
 - dotenv, cors, helmet, nodemon
 
-**Frontend** *(próximamente)*
+**Frontend**
 - React + Vite
-- TailwindCSS
+- TailwindCSS v4
 - React Router v7
 - TanStack Query v5
+- React Hook Form + Zod
+- Axios
 
 ---
 
@@ -28,9 +30,9 @@ Sistema de gestión para clínica dental. Permite administrar pacientes, citas, 
 odontosoft2/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma        # Modelos de la base de datos
-│   │   ├── seed.js              # Datos iniciales (usuario admin)
-│   │   └── migrations/          # Historial de migraciones SQL
+│   │   ├── schema.prisma
+│   │   ├── seed.js
+│   │   └── migrations/
 │   ├── src/
 │   │   ├── controllers/
 │   │   │   └── auth.controller.js
@@ -38,11 +40,36 @@ odontosoft2/
 │   │   │   └── auth.middleware.js
 │   │   ├── routes/
 │   │   │   └── auth.routes.js
-│   │   ├── app.js               # Configuración de Express
-│   │   └── server.js            # Punto de entrada
-│   ├── .env                     # Variables de entorno (no se sube a GitHub)
+│   │   ├── app.js
+│   │   └── server.js
+│   ├── .env
 │   └── package.json
-└── frontend/                    # Próximamente
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── axios.js
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   ├── router/
+│   │   │   └── AppRouter.jsx
+│   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── components/
+│   │   │   └── layout/
+│   │   │       ├── Layout.jsx
+│   │   │       └── Sidebar.jsx
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+├── docs/
+│   ├── modulo1_backend.md
+│   ├── modulo1_frontend_conceptos.md
+│   ├── modulo1_frontend_setup.md
+│   └── modulo1_frontend_login.md
+└── README.md
 ```
 
 ---
@@ -50,8 +77,9 @@ odontosoft2/
 ## Requisitos previos
 
 - [Node.js](https://nodejs.org/) v18 o superior
-- [PostgreSQL](https://www.postgresql.org/) corriendo localmente o en Docker
+- [PostgreSQL](https://www.postgresql.org/) v16
 - Git
+- GitHub Codespaces (entorno de desarrollo usado en este proyecto)
 
 ---
 
@@ -61,20 +89,19 @@ odontosoft2/
 
 ```bash
 git clone https://github.com/juangarcesco/odontosoft2.git
-cd odontosoft2/backend
+cd odontosoft2
 ```
 
-### 2. Instalar dependencias
+### 2. Instalar dependencias del backend
 
 ```bash
+cd backend
 npm install
 ```
 
-> **Nota:** Este proyecto usa Prisma 5.22.0 por compatibilidad con Node.js v24 en GitHub Codespaces.
+### 3. Configurar variables de entorno del backend
 
-### 3. Configurar variables de entorno
-
-Crea el archivo `.env` en la carpeta `backend/`:
+Crea el archivo `backend/.env`:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/odontosoft"
@@ -83,31 +110,72 @@ JWT_EXPIRES_IN="8h"
 PORT=3001
 ```
 
-### 4. Generar el cliente de Prisma
+### 4. Instalar dependencias del frontend
 
 ```bash
-npx prisma generate
+cd ../frontend
+npm install
 ```
 
-### 5. Crear las tablas en la base de datos
+### 5. Configurar la URL del backend en Axios
 
-```bash
-npx prisma migrate dev --name init_usuarios
+Abre `frontend/src/api/axios.js` y actualiza la `baseURL` con la URL pública de tu Codespace:
+
+```js
+const api = axios.create({
+  baseURL: 'https://[CODESPACE_NAME]-3001.app.github.dev/api'
+})
 ```
 
-### 6. Crear el usuario administrador inicial
+> El patrón es: `https://[nombre-de-tu-codespace]-3001.app.github.dev/api`
+> Puedes ver el nombre con: `echo $CODESPACE_NAME`
+
+---
+
+## Iniciar el proyecto
+
+Estos tres pasos son necesarios **cada vez que abres el Codespace**:
+
+### 1. Iniciar PostgreSQL
 
 ```bash
-npm run seed
+sudo service postgresql start
 ```
 
-### 7. Iniciar el servidor
+### 2. Terminal 1 — Backend
 
 ```bash
+cd /workspaces/odontosoft2/backend
 npm run dev
 ```
 
-El servidor queda corriendo en `http://localhost:3001`
+### 3. Terminal 2 — Frontend
+
+```bash
+cd /workspaces/odontosoft2/frontend
+npm run dev
+```
+
+Luego abre la pestaña **Ports** en Codespaces y abre el puerto **5173** en el navegador.
+
+---
+
+## Primera vez: migración y seed
+
+Solo necesitas correr esto una vez al configurar el proyecto:
+
+```bash
+cd backend
+
+# Generar el cliente de Prisma
+npx prisma generate
+
+# Crear las tablas en la base de datos
+npx prisma migrate dev --name init_usuarios
+
+# Crear el usuario administrador
+npm run seed
+```
 
 ---
 
@@ -115,35 +183,39 @@ El servidor queda corriendo en `http://localhost:3001`
 
 | Variable | Descripción | Ejemplo |
 |---|---|---|
-| `DATABASE_URL` | Cadena de conexión a PostgreSQL | `postgresql://user:pass@localhost:5432/odontosoft` |
+| `DATABASE_URL` | Cadena de conexión a PostgreSQL | `postgresql://postgres:postgres@localhost:5432/odontosoft` |
 | `JWT_SECRET` | Clave secreta para firmar tokens JWT | cualquier string largo y aleatorio |
 | `JWT_EXPIRES_IN` | Tiempo de expiración del token | `8h`, `1d`, `7d` |
-| `PORT` | Puerto donde corre el servidor | `3001` |
+| `PORT` | Puerto donde corre el servidor backend | `3001` |
 
 ---
 
-## Scripts
+## Scripts disponibles
 
+**Backend**
 ```bash
-npm run dev    # Inicia el servidor con nodemon (reinicio automático al guardar)
-npm run seed   # Crea el usuario administrador en la base de datos
+npm run dev    # Inicia el servidor con nodemon
+npm run seed   # Crea el usuario administrador inicial
+```
+
+**Frontend**
+```bash
+npm run dev    # Inicia Vite en modo desarrollo
+npm run build  # Genera la versión de producción
 ```
 
 ---
 
 ## Endpoints disponibles
 
-### Autenticación
-
-| Método | URL | Auth requerida | Descripción |
+| Método | URL | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/api/health` | No | Verifica que el servidor está corriendo |
+| `GET` | `/api/health` | No | Verifica que el servidor está vivo |
 | `POST` | `/api/auth/login` | No | Inicia sesión, devuelve token JWT |
 | `GET` | `/api/auth/me` | ✅ Sí | Devuelve datos del usuario autenticado |
 
 ### Ejemplo: Login
 
-**Request**
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -154,7 +226,7 @@ Content-Type: application/json
 }
 ```
 
-**Response**
+Respuesta:
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
@@ -165,13 +237,6 @@ Content-Type: application/json
     "rol": "ADMIN"
   }
 }
-```
-
-### Ejemplo: Ruta protegida
-
-```http
-GET /api/auth/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 ```
 
 ---
@@ -198,32 +263,58 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 
 ---
 
+## Problemas conocidos en Codespaces
+
+### PostgreSQL se apaga al cerrar el Codespace
+PostgreSQL no persiste entre sesiones. Siempre debes iniciarlo manualmente:
+```bash
+sudo service postgresql start
+```
+
+### Axios no puede conectar con localhost
+En Codespaces cada puerto tiene una URL pública. No uses `localhost:3001` en el frontend — usa la URL pública del Codespace. Ver paso 5 de instalación.
+
+### Error de CORS
+Durante desarrollo el backend tiene `cors({ origin: '*' })`. Además el puerto 3001 debe estar configurado como **Public** en la pestaña Ports de Codespaces.
+
+### Prisma incompatible con Node.js v24
+Se usa Prisma `5.22.0` por compatibilidad con Node.js v24 en Codespaces. No actualizar sin verificar compatibilidad.
+
+---
+
+## Documentación
+
+Cada módulo tiene su propia documentación en la carpeta `docs/`:
+
+| Archivo | Descripción |
+|---|---|
+| `modulo1_backend.md` | Backend, Prisma, PostgreSQL y autenticación JWT |
+| `modulo1_frontend_conceptos.md` | Conceptos generales del frontend para principiantes |
+| `modulo1_frontend_setup.md` | Configuración inicial del proyecto React + Vite |
+| `modulo1_frontend_login.md` | Login, AuthContext, Router y Layout |
+
+---
+
 ## Roadmap
 
-- [x] **Módulo 1 — Backend & Autenticación**
+- [x] **Módulo 1 — Backend**
   - [x] Servidor Express configurado
-  - [x] Base de datos PostgreSQL + Prisma
-  - [x] Modelo de Usuario con roles
+  - [x] PostgreSQL + Prisma ORM
+  - [x] Modelo Usuario con roles
   - [x] Login con JWT
   - [x] Middleware de autenticación
-  - [x] Usuario admin inicial (seed)
+  - [x] Seed con usuario admin
 
-- [ ] **Módulo 1 — Frontend**
-  - [ ] Proyecto React + Vite
-  - [ ] Pantalla de Login
-  - [ ] AuthContext y rutas protegidas
-  - [ ] Layout base con sidebar
+- [x] **Módulo 1 — Frontend**
+  - [x] Proyecto React + Vite + TailwindCSS
+  - [x] Axios configurado con interceptor JWT
+  - [x] AuthContext y manejo de sesión
+  - [x] Rutas protegidas con React Router v7
+  - [x] Pantalla de Login con validación
+  - [x] Layout con sidebar de navegación
+  - [x] Dashboard de bienvenida
 
 - [ ] **Módulo 2 — Pacientes**
 - [ ] **Módulo 3 — Citas**
 - [ ] **Módulo 4 — Tratamientos**
 - [ ] **Módulo 5 — Pagos**
-
----
-
-## Desarrollado con
-
-- [Express](https://expressjs.com/)
-- [Prisma](https://www.prisma.io/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
