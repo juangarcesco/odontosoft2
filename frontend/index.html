@@ -1,45 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba Frontend - Backend</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #0f172a; color: white; }
-        .card { background: #1e293b; padding: 20px; border-radius: 8px; max-width: 400px; }
-        #mensaje { margin-top: 15px; font-weight: bold; color: #38bdf8; }
-    </style>
-</head>
-<body>
-
-    <div class="card">
-        <h2>Estado de la API</h2>
-        <button id="btn-conectar">Probar Conexión</button>
-        <div id="mensaje">Esperando conexión...</div>
-    </div>
-
-    <script>
-        async function conectarAPI() {
-            const mensajeDiv = document.getElementById('mensaje');
-            mensajeDiv.innerText = "Cargando...";
-
-            try {
-                const urlBackend = 'https://cautious-space-dollop-6447jx4x47xf546j-3000.app.github.dev/api/health';
-                
-                const respuesta = await fetch(urlBackend);
-                const datos = await respuesta.json();
-                
-                mensajeDiv.innerText = datos.message;
-                mensajeDiv.style.color = "#4ade80";
-                
-            } catch (error) {
-                console.error('Error al conectar:', error);
-                mensajeDiv.innerText = 'Error: No se pudo conectar al servidor. Revisa que el puerto sea público.';
-                mensajeDiv.style.color = "#f87171";
-            }
-        }
-
-        document.getElementById('btn-conectar').addEventListener('click', conectarAPI);
-    </script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

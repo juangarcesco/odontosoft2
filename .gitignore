@@ -1,1 +1,10 @@
+# Repomix
 repomix-output.txt
+repomix-output.md
+repomix-output.xml
+
+# Node
+node_modules/
+
+# Entorno
+.env
